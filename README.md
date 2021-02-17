@@ -22,11 +22,10 @@ ML-Agents Release 12, Unity 2020.2
 - a results folder will be created and the network will be saved here
 - visualise training on tensorboard: `tensorboard --logdir results --port 6006`
 
+NB. to train with a prebuilt environment: build the env first and then add `--env= <relativepath-w/o-extension-to-build-file>` to the command
 ### Training with Python
 
-#### Live training
 
-#### Training w/ Built Environment
 
 ## Inference
 ### Heuristic
