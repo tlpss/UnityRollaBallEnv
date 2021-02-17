@@ -9,3 +9,7 @@ dependencies:
     - mlagents==0.23.0
     - mlagents-envs==0.23.0
     - gym_unity==0.23.0
+    - isort
+    - black
+    - mypy
+    - autoflake
