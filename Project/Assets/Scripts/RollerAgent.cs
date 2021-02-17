@@ -32,6 +32,13 @@ public class RollerAgent: Agent
     // here the env is typically randomized
     public override void OnEpisodeBegin()
     {
+        // test Sidechannel
+        var envParameters = Academy.Instance.EnvironmentParameters;
+        float targetX = envParameters.GetWithDefault("target_x", 0.0f);
+        Debug.Log("received targetX = " + targetX );
+        
+        
+        
         // bring agent momentum to zero 
         this.rAgent.angularVelocity = Vector3.zero;
         this.rAgent.velocity = Vector3.zero;
