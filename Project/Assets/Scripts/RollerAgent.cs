@@ -12,7 +12,7 @@ public class RollerAgent: Agent
     // NB: rigidbody -> physics simulation, transform -> position,orientation,size
     public Transform Target; // TF of the target object 
 
-    private Rigidbody rAgent; // rigid body attached to agent
+    private Rigidbody _rAgent; // rigid body attached to agent
     public Vector3 initialAgentPose = new Vector3(0, 0.5f, 0);
 
     public float forceMultiplier = 10;
@@ -25,42 +25,33 @@ public class RollerAgent: Agent
         Debug.Log("size of continuous observation vector = " + behaviorParameters.BrainParameters.VectorObservationSize);
         Debug.Log("size of continuous action vector = " + behaviorParameters.BrainParameters.ActionSpec.NumContinuousActions);
 
-        rAgent = this.GetComponent<Rigidbody>(); // get rigid body attached to Agent gameobject
+        _rAgent = this.GetComponent<Rigidbody>(); // get rigid body attached to Agent gameobject
     }
 
     // gets called on begin of each episode
     // here the env is typically randomized
     public override void OnEpisodeBegin()
     {
-        // test Sidechannel
-        var envParameters = Academy.Instance.EnvironmentParameters;
-        float targetX = envParameters.GetWithDefault("target_x", 0.0f);
-        Debug.Log("received targetX = " + targetX );
-        
-        
-        
         // bring agent momentum to zero 
-        this.rAgent.angularVelocity = Vector3.zero;
-        this.rAgent.velocity = Vector3.zero;
+        this._rAgent.angularVelocity = Vector3.zero;
+        this._rAgent.velocity = Vector3.zero;
         // set initial position 
         this.transform.localPosition = initialAgentPose;
-        // set target position
-        Target.localPosition = new Vector3(Random.value * 8 - 4,
-            0.5f, 
-            Random.value * 8 - 4);
-        
+        // set target position (relative to Gameobject) based on SideChannel values
+        Target.localPosition = EnvironmentState.Instance.TargetPosition;
+
     }
     // create observations
     public override void CollectObservations(VectorSensor sensor)
     {
-        /* 8D vector observation */
+        /* 8D vector observation that contains the relevant environment state*/
         // target pose
         sensor.AddObservation(Target.localPosition);
         // agent pose
         sensor.AddObservation(this.transform.localPosition);
         // agent velocity
-        sensor.AddObservation(rAgent.velocity.x);
-        sensor.AddObservation(rAgent.velocity.z);
+        sensor.AddObservation(_rAgent.velocity.x);
+        sensor.AddObservation(_rAgent.velocity.z);
     }
     //receives actions and assigns rewards
     public override void OnActionReceived(ActionBuffers actionBuffers)
@@ -69,7 +60,7 @@ public class RollerAgent: Agent
         Vector3 controlSignal = Vector3.zero;
         controlSignal.x = actionBuffers.ContinuousActions[0];
         controlSignal.z = actionBuffers.ContinuousActions[1];
-        rAgent.AddForce(controlSignal * forceMultiplier);
+        _rAgent.AddForce(controlSignal * forceMultiplier);
 
         // Rewards
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, Target.localPosition);

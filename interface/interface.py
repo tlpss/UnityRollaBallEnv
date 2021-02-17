@@ -13,7 +13,9 @@ env = UnityToGymWrapper(unity_env,uint8_visual=True,allow_multiple_obs = True)
 
 print(env.observation_space)
 while(True):
-    channel.set_float_parameter("target_x", 3.0)
+    channel.set_float_parameter("target_position_x", 3.0)
+    channel.set_float_parameter("target_position_z", 3.0)
+
     obs = env.reset()
 
     for i in range(1000):
