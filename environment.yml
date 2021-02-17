@@ -1,0 +1,12 @@
+name: ml-agents
+channels:
+  - defaults
+dependencies:
+  - python=3.8.5
+  - cudatoolkit=10.2
+  - torchvision
+  - pytorch=1.7.1
+  - pip=20.3
+  - pip: 
+    - mlagents==0.23.0
+    - mlagents-envs==0.23.0
