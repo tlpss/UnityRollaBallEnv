@@ -8,7 +8,6 @@ sys.path.append(str(Path(__file__).parents[1]))
 
 from goalgym_unity import BaseAction, BaseGoal, BaseObservation, BaseUnityToGoalGymWrapper, UnityObservation
 
-
 @dataclass
 class Goal(BaseGoal):
     """
@@ -26,19 +25,14 @@ class Goal(BaseGoal):
 @dataclass
 class Observation(BaseObservation):
     """
-    Observation of this env is the full state
+    Observation of this env is the camera input of the overhead camera
+    this is a 84x84x3 numpy array with values between 0 and 255
     """
 
-    target_position: np.ndarray  # (3,)
-    agent_position: np.ndarray  # (3,)
-
-    agent_velocity_x: float
-    agent_velocity_z: float
+    camera_input: np.ndarray  # 84x84x3
 
     def to_numpy(self) -> np.ndarray:
-        return np.array(
-            [self.target_position, self.agent_position, self.agent_velocity_x, self.agent_velocity_z]
-        ).flatten()
+        return self.camera_input
 
 
 @dataclass
@@ -58,16 +52,14 @@ class UnityToGoalGymWrapper(BaseUnityToGoalGymWrapper):
     """
     Implements Base Interface using the previously defined Agent Goal, Action and Observation
     Unity observation has shape [np.ndarray(84,84,3) , np.ndarray(8,)], where the order of
-    the vector observation corresponds with the Observation dataclass
+    the vector is defined in Unity as [target_pose, agent_pose, agent_velocity_x, agent_velocity_z]
     """
 
     def _generate_observation(self, observation: UnityObservation) -> Observation:
         # Unity observation has shape [ np.ndarray(res,res,3) , np.ndarray(8,)]
         # can be seen in the Agent Script
-        vector_observation = observation[-1]
-        return Observation(
-            vector_observation[:3], vector_observation[3:6], vector_observation[6], vector_observation[7]
-        )
+        camera_observation = observation[0]
+        return Observation(camera_observation)
 
     def _sample_goal(self) -> Goal:
         return Goal(0.0, 0.0)

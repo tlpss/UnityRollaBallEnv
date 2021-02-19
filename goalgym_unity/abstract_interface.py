@@ -49,6 +49,9 @@ class BaseGoal(abc.ABC):
 class BaseObservation(abc.ABC):
     """
     Container Base Class for Gym Observation
+
+    This Observation will be a subset of the full Unity Observation that contains
+    the full state as vectorObservation and optional visual observations
     """
 
     @abc.abstractmethod
@@ -104,7 +107,7 @@ class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
         self._desired_goal: BaseGoal = self._sample_goal()
         self._achieved_goal: BaseGoal = self._sample_goal()
         self._goal_space = spaces.Box(-np.inf, np.inf, shape=self._desired_goal.get_size(), dtype="float32")
-        self._observation_space = spaces.Dict(
+        self._observation_space: spaces.Dict = spaces.Dict(
             {
                 "desired_goal": self._goal_space,
                 "achieved_goal": self._goal_space,
@@ -146,12 +149,22 @@ class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
 
     @abc.abstractmethod
     def _sample_goal(self) -> BaseGoal:
-        pass
+        """
+        creates an instance of the Goal Class for the environment
+        """
 
     @abc.abstractmethod
     def _set_achieved_goal(self, observation: UnityObservation) -> None:
-        pass
+        """
+        takes the complete Unity observation consisting of optional visual input
+        and the vectorobservation. extracts the achieved goal, corresponding to the
+        Goal Class for the environment. assigns this newly created instance to the _achieved_goal attr
+        """
 
     @abc.abstractmethod
     def _generate_observation(self, observation: UnityObservation) -> BaseObservation:
-        pass
+        """
+        takes the complete unity observation consisting of optional visual input
+        and the vector Observation that represents the full state. creates an
+        Observation as defined for the environment
+        """

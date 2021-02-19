@@ -1,6 +1,11 @@
 # RollABallEnv
 Unity3D Environment for Goal-Based RL with Randomization. 
 
+This project serves as a PoC for a goal-based RL setup with ml-agents that allows for external randomization:
+It contains 3 items
+- a dummy Unity project which defines a training environment for a single agent
+- package that defines an abstract Goal-Based Gym Interface to unity
+- package that uses this abstract interface to define 2 environments based on the Unity env
 ## Environment Features 
 
 ## Resources
@@ -23,9 +28,9 @@ ML-Agents Release 12, Unity 2020.2
 - visualise training on tensorboard: `tensorboard --logdir results --port 6006`
 
 NB. to train with a prebuilt environment: build the env first and then add `--env= <relativepath-w/o-extension-to-build-file>` to the command
-### Training with Python
-
-
+### Interfacing with Python for training w/ 
+- define Action, Observation and Goal classes. Define the required functions in the Interface. 
+- see examples in /gym_envs folder
 
 ## Inference
 ### Heuristic
