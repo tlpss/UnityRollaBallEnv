@@ -1,43 +1,52 @@
+using System;
 using Unity.MLAgents;
 using UnityEngine;
-
+using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 
-public class EnvironmentState
+public class EnvironmentChannel
+/*
+ * ML-Agents Environment Parameters SideChannel Endpoint
+ */
+
 {
     // Singleton Construction
-    private static EnvironmentState _instance = new EnvironmentState();
-    private EnvironmentState()
+    private static EnvironmentChannel _instance = new EnvironmentChannel();
+    private EnvironmentChannel()
     {
     }
 
-    public static EnvironmentState Instance => _instance;
+    public static EnvironmentChannel Instance => _instance;
     // Environment Parameters are delivered to Academy by Environments SideChannel
-    private readonly EnvironmentParameters _envParameters = Academy.Instance.EnvironmentParameters;
+    private readonly EnvironmentParameters _envParameters = Academy.Instance.EnvironmentParameters;    
+
+    public Boolean Initialized 
+    {
+        get =>_envParameters.GetWithDefault("initialized", float.NaN).Equals(1.0f);
+    }
     
     /* Actual Environment State */
     
     // Position of the Target 
     public Vector3 TargetPosition
     {
-        get
+        get  
         {
             Vector3 targetPosition = new Vector3(0, 0, 0);
             targetPosition.y = 0.2f;// above floor
             targetPosition.x = _envParameters.GetWithDefault("target_position_x", float.NaN);
             targetPosition.z = _envParameters.GetWithDefault("target_position_z", float.NaN);
-
+            
             // handle NaNs to allow for gameplay without Sidechannel
             // uniform randomization
-            if (float.IsNaN(targetPosition.x) || float.IsNaN(targetPosition.z))
+            if  (float.IsNaN(targetPosition.x) || float.IsNaN(targetPosition.z))
             {
-                Debug.Log("TargetPosition was not set by SideChannel, creating random position");
-                targetPosition.x = Random.value * 8 - 4;
-                targetPosition.z = Random.value * 8 - 4;
+                Debug.LogError("TargetPosition was not set by SideChannel, although it was requested by the Agent");
             }
             return targetPosition;
         }
     }
-
+    
+    
     
 }

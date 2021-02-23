@@ -39,10 +39,10 @@ class BaseGoal(abc.ABC):
     def to_numpy(self) -> np.ndarray:
         pass
 
-    def get_size(self):
+    def get_size(self) -> Tuple:
         return self.to_numpy().shape
 
-    def dict(self):
+    def dict(self) -> Dict:
         return self.__dict__
 
 
@@ -112,6 +112,9 @@ class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
         self._channel = channel
         self._desired_goal: BaseGoal = self._sample_goal()
         self._achieved_goal: BaseGoal = self._sample_goal()
+
+        self.reset(self._desired_goal)
+
         self._goal_space = spaces.Box(-np.inf, np.inf, shape=self._desired_goal.get_size(), dtype="float32")
         self._observation_space: spaces.Dict = spaces.Dict(
             {
@@ -122,12 +125,15 @@ class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
                 # TODO -> change to the actual observation space
             }
         )
+        # signal that the channel has been set up (reset has been called so all env/goal params are set)
+        self._channel.set_float_parameter('initialized',1.0)
 
     def reset(self, goal: BaseGoal, parameters: BaseParams = None) -> BaseObservation:
         self._desired_goal = goal
 
         # set goal parameters before reset which triggers onEpisodeStart in Unity
         for key, value in goal.dict().items():
+            print(f"params: {key} : {value}")
             self._channel.set_float_parameter(key, value)
         # set env parameters before reset
         if parameters:

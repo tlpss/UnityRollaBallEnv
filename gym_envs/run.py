@@ -1,5 +1,4 @@
-#
-from env_1 import Action, Goal, UnityToGoalGymWrapper
+# from env_1 import Action, Goal, UnityToGoalGymWrapper
 from env_2 import Action, Goal, UnityToGoalGymWrapper
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.environment_parameters_channel import EnvironmentParametersChannel
