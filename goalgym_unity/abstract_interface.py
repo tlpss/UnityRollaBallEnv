@@ -80,12 +80,18 @@ class BaseParams(abc.ABC):
 
 class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
     """extend Unity Gym interface to work with Goal-based environments.
+
     This imposes certain structure on the observation:  the observation
     space is required to contain at least three elements, namely `observation`, `desired_goal`, and
     `achieved_goal`. Here, `desired_goal` specifies the goal that the agent should attempt to achieve.
     `achieved_goal` is the goal that it currently achieved instead. `observation` contains the
     actual observations of the environment as per usual.
+
+    This also requires an externalized reward function that depends on the desired and
+    achieved goal (and possible additional information)
+
     cf https://github.com/openai/gym/blob/c8a659369d98706b3c98b84b80a34a832bbdc6c0/gym/core.py#L163
+
 
     Furthermore the Unity environment is as such that the there is a vectorobservation,
     containing the relevant state of the environment and an optional number of visual observations
@@ -136,16 +142,24 @@ class BaseUnityToGoalGymWrapper(UnityToGymWrapper, abc.ABC):
         unity_observation = unity_gym_observation[0]  # first element is the actual observation
         # extract achieved goal
         self._set_achieved_goal(unity_observation)
-
+        reward = self.compute_reward(self._achieved_goal,self._desired_goal)
         # replace the unity observation by the agent's observation
         observation = self._generate_observation(unity_observation)
-        gym_observation = (observation,) + unity_gym_observation[1:]
+        gym_observation = (observation, reward,) + unity_gym_observation[2:]
 
         return {
             "observation": gym_observation,
             "achieved_goal": self._achieved_goal.to_numpy().copy(),
             "desired_goal": self._desired_goal.to_numpy().copy(),
         }
+
+    @abc.abstractmethod
+    def compute_reward(self, achieved_goal: BaseGoal, desired_goal: BaseGoal, info: Dict = None):
+        """
+        externalize the reward to allow for recomputing rewards when changing the goal (HER)
+
+        info is an auxiliary dict to pass additional information
+        """
 
     @abc.abstractmethod
     def _sample_goal(self) -> BaseGoal:

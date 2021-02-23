@@ -22,6 +22,7 @@ if __name__ == "__main__":
             gym_observation = obs_dict["observation"]
             observation, reward, done, info = gym_observation
             print(observation)
+            print(f"reward = {reward}")
 
             if done:
                 break

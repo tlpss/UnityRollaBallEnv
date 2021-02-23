@@ -1,6 +1,7 @@
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Dict
 
 import numpy as np
 
@@ -15,6 +16,8 @@ class Goal(BaseGoal):
     Goal of this env is the 2D position that the agent has to reach,
     visually indicated with a cube in Unity
     """
+
+    goal_tolerance = 1.0
 
     target_position_x: float
     target_position_z: float
@@ -60,6 +63,15 @@ class UnityToGoalGymWrapper(BaseUnityToGoalGymWrapper):
     Unity observation has shape [np.ndarray(84,84,3) , np.ndarray(8,)], where the order of
     the vector observation corresponds with the Observation dataclass
     """
+
+    goal_tolerance = 1.0 # L2 norm tolerance for target position
+
+    def compute_reward(self, achieved_goal: BaseGoal, desired_goal: BaseGoal, info: Dict = None):
+        # sparse reward: 1 on success, 0 else
+        distance = np.linalg.norm(achieved_goal.to_numpy() - desired_goal.to_numpy())
+        if distance < self.goal_tolerance:
+            return 1.0
+        return 0.0
 
     def _generate_observation(self, observation: UnityObservation) -> Observation:
         # Unity observation has shape [ np.ndarray(res,res,3) , np.ndarray(8,)]

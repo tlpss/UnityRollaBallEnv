@@ -1,12 +1,14 @@
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Dict
 
 import numpy as np
 
 sys.path.append(str(Path(__file__).parents[1]))
 
 from goalgym_unity import BaseAction, BaseGoal, BaseObservation, BaseUnityToGoalGymWrapper, UnityObservation
+
 
 @dataclass
 class Goal(BaseGoal):
@@ -54,6 +56,14 @@ class UnityToGoalGymWrapper(BaseUnityToGoalGymWrapper):
     Unity observation has shape [np.ndarray(84,84,3) , np.ndarray(8,)], where the order of
     the vector is defined in Unity as [target_pose, agent_pose, agent_velocity_x, agent_velocity_z]
     """
+    goal_tolerance = 1.0 # L2 norm tolerance for target position
+
+    def compute_reward(self, achieved_goal: BaseGoal, desired_goal: BaseGoal, info: Dict = None):
+        # sparse reward: 1 on success, 0 else
+        distance = np.linalg.norm(achieved_goal.to_numpy() - desired_goal.to_numpy())
+        if distance < self.goal_tolerance:
+            return 1.0
+        return 0.0
 
     def _generate_observation(self, observation: UnityObservation) -> Observation:
         # Unity observation has shape [ np.ndarray(res,res,3) , np.ndarray(8,)]
